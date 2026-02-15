@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Countdown Maldive</title>
+
+  <!-- Google Font: Gluten Bold -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gluten:wght@700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --font: "Gluten", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+
+      /* Dimensioni font */
+      --title-size: 36px;
+      --sub-size: 24px;
+      --timer-size: 40px;
+
+      /* Colore testo */
+      --text-color: #0bc9cf;
+
+      /* POSIZIONE BLOCCO TESTO:
+         Regola questo valore (50–58vh tipicamente) finché il testo
+         sta tra sabbia e acqua, appena sotto la baracca rossa. */
+      --anchor-y: 52vh;
+
+      /* Overlay leggero: la foto è chiara, non vogliamo “sporcarla” */
+      --overlay: rgba(0,0,0,.20);
+    }
+
+    html, body { height: 100%; margin: 0; }
+
+    body{
+      font-family: var(--font);
+      color: var(--text-color);
+      background: url("./bg.jpg") center/cover no-repeat fixed;
+    }
+
+    .overlay{
+      min-height: 100%;
+      position: relative;
+      background: linear-gradient(var(--overlay), var(--overlay));
+    }
+
+    /* Blocco testo “galleggiante” */
+    .hero{
+      position: absolute;
+      left: 50%;
+      top: var(--anchor-y);
+      transform: translate(-50%, -50%);
+      text-align: center;
+      width: min(980px, calc(100% - 40px));
+      padding: 18px 18px;
+
+      background: rgba(0,0,0,.18);
+      border-radius: 18px;
+      backdrop-filter: blur(6px);
+
+      box-shadow: 0 10px 40px rgba(0,0,0,.25);
+    }
+
+    /* Effetto floating */
+    .floating{
+      animation: floaty 5.5s ease-in-out infinite;
+    }
+
+    @keyframes floaty{
+      0%, 100% { transform: translate(-50%, -50%) translateY(0px); }
+      50%      { transform: translate(-50%, -50%) translateY(-8px); }
+    }
+
+    h1{
+      margin: 0 0 10px;
+      font-size: var(--title-size);
+      font-weight: 700;
+      letter-spacing: .3px;
+      text-transform: none;
+      text-shadow: 0 0 14px rgba(0,0,0,.65);
+    }
+
+    .sub{
+      margin: 0 0 12px;
+      font-size: var(--sub-size);
+      font-weight: 700;
+      text-shadow: 0 0 14px rgba(0,0,0,.65);
+      opacity: .95;
+    }
+
+    .timer{
+      font-size: var(--timer-size);
+      font-weight: 700;
+      line-height: 1.15;
+      text-shadow: 0 0 16px rgba(0,0,0,.70);
+    }
+
+    /* Micro animazione al cambio minuto */
+    .timer.tick{
+      animation: tick 260ms ease-out;
+    }
+
+    @keyframes tick{
+      0%   { transform: scale(1); filter: brightness(1); }
+      50%  { transform: scale(1.03); filter: brightness(1.12); }
+      100% { transform: scale(1); filter: brightness(1); }
+    }
+
+    /* Responsive */
+    @media (max-width: 600px){
+      :root{
+        --title-size: 28px;
+        --sub-size: 20px;
+        --timer-size: 32px;
+        --anchor-y: 54vh; /* spesso su mobile serve un pelo più giù */
+      }
+      .hero{ padding: 16px 14px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="overlay">
+    <div class="hero floating">
+      <h1>ALLA NOSTRE VACANZE ALLE MALDIVE</h1>
+      <p class="sub">mancano ancora</p>
+      <div class="timer" id="timer">—</div>
+    </div>
+  </div>
+
+  <script>
+    // Target: 13 giugno 2026 10:00 in Italia (Europe/Rome).
+    // A giugno l'Italia è in ora legale (UTC+2), quindi 10:00 Rome = 08:00 UTC.
+    const targetUTC = Date.UTC(2026, 5, 13, 8, 0, 0); // 5=Giugno (0=Gennaio)
+
+    let lastRendered = "";
+
+    function tick(){
+      const now = Date.now();
+      const el = document.getElementById("timer");
+      let diffMs = targetUTC - now;
+
+      if (diffMs <= 0){
+        el.textContent = "0 giorni, 00 ore e 00 minuti";
+        return;
+      }
+
+      const totalMinutes = Math.floor(diffMs / 60000);
+      const days = Math.floor(totalMinutes / (60 * 24));
+      const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+      const minutes = totalMinutes % 60;
+
+      const nextText =
+        `${days} giorni, ${String(hours).padStart(2,"0")} ore e ${String(minutes).padStart(2,"0")} minuti`;
+
+      if (nextText !== lastRendered){
+        el.textContent = nextText;
+
+        // animazione “tick”
+        el.classList.remove("tick");
+        void el.offsetWidth; // reflow per riattivare animazione
+        el.classList.add("tick");
+
+        lastRendered = nextText;
+      }
+    }
+
+    tick();
+    setInterval(tick, 1000);
+  </script>
+</body>
+</html>
