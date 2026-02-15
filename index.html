@@ -14,22 +14,19 @@
     :root{
       --font: "Gluten", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 
-      /* Dimensioni font */
-      --title-size: clamp(36px, 3vw, 60px);
-      --sub-size: clamp(24px, 2vw, 40px);
-      --timer-size: clamp(40px, 3.5vw, 70px);
+      /* Mobile-first: font fluidi e più “vertical-friendly” */
+      --title-size: clamp(22px, 4.6vw, 40px);
+      --sub-size: clamp(16px, 3.2vw, 26px);
+      --timer-size: clamp(24px, 5.6vw, 46px);
 
+      /* Colore testo scelto */
+      --text-color: #163455;
 
-      /* Colore testo */
-      --text-color: #0bc9cf;
+      /* Posizione blocco testo su immagine verticale */
+      --anchor-y: 34vh;  /* tipico range: 30–40vh */
 
-      /* POSIZIONE BLOCCO TESTO:
-         Regola questo valore (50–58vh tipicamente) finché il testo
-         sta tra sabbia e acqua, appena sotto la baracca rossa. */
-      --anchor-y: 52vh;
-
-      /* Overlay leggero: la foto è chiara, non vogliamo “sporcarla” */
-      --overlay: rgba(0,0,0,.20);
+      /* Overlay quasi zero (foto pulita) */
+      --overlay: rgba(0,0,0,0);
     }
 
     html, body { height: 100%; margin: 0; }
@@ -37,7 +34,9 @@
     body{
       font-family: var(--font);
       color: var(--text-color);
-      background: url("./bg.jpg") center/cover no-repeat fixed;
+      background: url("./bg.jpg") center/cover no-repeat;
+      /* Su mobile "fixed" spesso lagga: meglio scroll */
+      background-attachment: scroll;
     }
 
     .overlay{
@@ -46,80 +45,94 @@
       background: linear-gradient(var(--overlay), var(--overlay));
     }
 
-    /* Blocco testo “galleggiante” */
+    /* Blocco testo (senza box) */
     .hero{
       position: absolute;
       left: 50%;
       top: var(--anchor-y);
       transform: translate(-50%, -50%);
       text-align: center;
-      padding: 18px 18px;
 
-      background: rgba(0,0,0,.18);
-      border-radius: 18px;
-      backdrop-filter: blur(6px);
-
-      box-shadow: 0 10px 40px rgba(0,0,0,.25);
-
+      /* ZERO a capo */
       white-space: nowrap;
-      max-width: 95vw;
+
+      /* Non oltre i bordi */
+      max-width: 96vw;
+
+      /* Micro padding per evitare edge-touch */
+      padding: 6px 10px;
     }
 
-
-    /* Effetto floating */
+    /* Floating */
     .floating{
-      animation: floaty 5.5s ease-in-out infinite;
+      animation: floaty 6.2s ease-in-out infinite;
     }
-
     @keyframes floaty{
       0%, 100% { transform: translate(-50%, -50%) translateY(0px); }
       50%      { transform: translate(-50%, -50%) translateY(-8px); }
     }
 
     h1{
-      margin: 0 0 10px;
+      margin: 0 0 8px;
       font-size: var(--title-size);
       font-weight: 700;
-      letter-spacing: .3px;
+      letter-spacing: -0.02em; /* aiuta a non sforare su mobile */
       text-transform: none;
-      text-shadow: 0 0 14px rgba(0,0,0,.65);
+
+      /* glow chiaro (per separare dal blu del cielo) */
+      text-shadow: 0 6px 18px rgba(255,255,255,.35);
     }
 
     .sub{
-      margin: 0 0 12px;
+      margin: 0 0 10px;
       font-size: var(--sub-size);
       font-weight: 700;
-      text-shadow: 0 0 14px rgba(0,0,0,.65);
+      letter-spacing: -0.01em;
       opacity: .95;
+      text-shadow: 0 6px 18px rgba(255,255,255,.30);
     }
 
     .timer{
       font-size: var(--timer-size);
       font-weight: 700;
-      line-height: 1.15;
-      text-shadow: 0 0 16px rgba(0,0,0,.70);
+      line-height: 1.12;
+      letter-spacing: -0.015em;
+      text-shadow: 0 6px 20px rgba(255,255,255,.35);
+
+      /* breathing premium (molto leggero) */
+      animation: breathe 4.2s ease-in-out infinite;
     }
 
-    /* Micro animazione al cambio minuto */
+    @keyframes breathe{
+      0%, 100% { transform: scale(1); filter: brightness(1); }
+      50%      { transform: scale(1.015); filter: brightness(1.06); }
+    }
+
+    /* Tick quando cambia il minuto */
     .timer.tick{
-      animation: tick 260ms ease-out;
+      animation: tick 260ms ease-out, breathe 4.2s ease-in-out infinite;
     }
-
     @keyframes tick{
       0%   { transform: scale(1); filter: brightness(1); }
-      50%  { transform: scale(1.03); filter: brightness(1.12); }
+      50%  { transform: scale(1.035); filter: brightness(1.12); }
       100% { transform: scale(1); filter: brightness(1); }
     }
 
-    /* Responsive */
-    @media (max-width: 600px){
+    /* Piccolo fine-tuning per schermi molto stretti */
+    @media (max-width: 380px){
       :root{
-        --title-size: 28px;
-        --sub-size: 20px;
-        --timer-size: 32px;
-        --anchor-y: 54vh; /* spesso su mobile serve un pelo più giù */
+        --anchor-y: 36vh;
       }
-      .hero{ padding: 16px 14px; }
+      h1{ letter-spacing: -0.03em; }
+      .timer{ letter-spacing: -0.03em; }
+    }
+
+    /* Desktop: puoi rialzare un filo se vuoi */
+    @media (min-width: 900px){
+      :root{
+        --anchor-y: 32vh;
+      }
+      body{ background-attachment: fixed; }
     }
   </style>
 </head>
@@ -143,7 +156,7 @@
     function tick(){
       const now = Date.now();
       const el = document.getElementById("timer");
-      let diffMs = targetUTC - now;
+      const diffMs = targetUTC - now;
 
       if (diffMs <= 0){
         el.textContent = "0 giorni, 00 ore e 00 minuti";
@@ -161,7 +174,7 @@
       if (nextText !== lastRendered){
         el.textContent = nextText;
 
-        // animazione “tick”
+        // tick animation
         el.classList.remove("tick");
         void el.offsetWidth; // reflow per riattivare animazione
         el.classList.add("tick");
